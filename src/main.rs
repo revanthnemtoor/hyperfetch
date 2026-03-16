@@ -109,15 +109,6 @@ fn main() -> io::Result<()> {
             }
             return Ok(());
         }
-        crate::cli::Commands::Man => {
-            use clap::CommandFactory;
-            let cmd = crate::cli::Cli::command();
-            let man = clap_mangen::Man::new(cmd);
-            let mut buffer = Vec::new();
-            man.render(&mut buffer).expect("Failed to render man page");
-            print!("{}", String::from_utf8_lossy(&buffer));
-            return Ok(());
-        }
         crate::cli::Commands::Run => {}
     }
 
