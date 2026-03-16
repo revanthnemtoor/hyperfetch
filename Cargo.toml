@@ -1,6 +1,6 @@
 [package]
 name = "hyperfetch"
-version = "0.1.0"
+version = "0.2.0-next"
 edition = "2021"
 
 [dependencies]
@@ -16,6 +16,7 @@ once_cell = "1.21.4"
 smallvec = "1.15.1"
 clap_complete = "4.6.0"
 wait-timeout = "0.2.1"
+crossterm = "0.28"
 
 [profile.release]
 opt-level = 3

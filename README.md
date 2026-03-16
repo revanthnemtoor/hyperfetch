@@ -3,20 +3,27 @@
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Rust](https://img.shields.io/badge/rust-1.75+-orange)
 
+![AUR Version](https://img.shields.io/aur/version/hyperfetch)
+![AUR Votes](https://img.shields.io/aur/votes/hyperfetch)
+![GitHub stars](https://img.shields.io/github/stars/revanthnemtoor/hyperfetch)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Rust](https://img.shields.io/badge/rust-1.75+-orange)
+
 # hyperfetch
+
 **hyperfetch** is an extremely fast and customizable system information tool written in Rust.
 
-It displays system information similar to tools like fastfetch or neofetch, but with a focus on **extreme performance, modern design, and clean output**.
+It displays system information similar to **fastfetch** or **neofetch**, but with a focus on **extreme performance, modern design, and clean output**.
 
 ---
 
 ## ✨ Features
 
-* ⚡ **Extreme Performance** – Target execution time in the **1–3 ms range**
+* ⚡ **Extreme Performance** – Typical execution time in the **1–3 ms range**
 * 🧠 **Hardware Caching** – Avoids repeated expensive system calls
 * 🎨 **Modern Aesthetic** – Clean and visually appealing output
-* ⚙️ **Configurable** – Customize via `config.toml`
-* 📦 **AUR Package Available**
+* ⚙️ **Configurable** – Customize behavior via `config.toml`
+* 📦 **AUR Package Available** – Easy installation for Arch Linux users
 
 ---
 
@@ -70,15 +77,26 @@ hyperfetch
 
 ## ⚡ Performance
 
-Example benchmark:
+Benchmark performed using:
 
 ```
-hyperfetch: ~1.6 ms
-fastfetch: ~5–7 ms
-neofetch: ~80–120 ms
+hyperfine -N --warmup 100 "hyperfetch" "fastfetch" "neofetch" "screenfetch"
 ```
 
-Measured using `hyperfine`.
+| Tool           | Mean Time  |
+| -------------- | ---------- |
+| **hyperfetch** | **1.8 ms** |
+| fastfetch      | 8.3 ms     |
+| neofetch       | 569 ms     |
+| screenfetch    | 1.099 s    |
+
+**Relative performance**
+
+* **~4.6× faster than fastfetch**
+* **~315× faster than neofetch**
+* **~608× faster than screenfetch**
+
+Benchmarks were run with **default configuration (logo + modules enabled)**.
 
 ---
 

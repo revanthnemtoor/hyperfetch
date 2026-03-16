@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand};
 
 /// Command-line interface definition for hyperfetch.
 #[derive(Parser, Debug)]
-#[command(name = "hyperfetch", version = "0.1.0", author = "Revanth", about = "An extremely fast system fetch tool written in Rust")]
+#[command(name = "hyperfetch", version = "0.2.0-next", author = "Revanth", about = "An extremely fast system fetch tool written in Rust")]
 pub struct Cli {
     /// Optional subcommand to execute specific tasks instead of a standard fetch
     #[command(subcommand)]
