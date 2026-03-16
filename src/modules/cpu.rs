@@ -1,6 +1,7 @@
 use crate::core::module::Module;
 use crate::core::sys_paths::CPUINFO;
 
+/// Module for identifying the CPU model and core count.
 pub struct CpuModule;
 
 impl Module for CpuModule {
@@ -9,11 +10,13 @@ impl Module for CpuModule {
     }
 
     fn fetch(&self) -> Vec<(String, String)> {
+        // Use the globally cached /proc/cpuinfo to avoid redundant file I/O
         if !CPUINFO.is_empty() {
             let mut model_name = String::new();
             let mut cores = 0;
 
             for line in CPUINFO.lines() {
+                // "model name" lines appear once per core
                 if line.starts_with("model name") {
                     if model_name.is_empty() {
                         model_name = line.split(':').nth(1).unwrap_or("").trim().to_string();
@@ -27,7 +30,7 @@ impl Module for CpuModule {
             }
         }
         
-        // Fallback to sysinfo crate if /proc parsing fails or is not Linux
+        // Robust fallback using the sysinfo crate if /proc parsing is unavailable
         use sysinfo::System;
         let mut sys = System::new();
         sys.refresh_cpu_usage();

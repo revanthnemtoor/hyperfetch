@@ -1,41 +1,42 @@
 use clap::{Parser, Subcommand};
 
-/// A blazingly fast system fetch tool in Rust.
+/// Command-line interface definition for hyperfetch.
 #[derive(Parser, Debug)]
 #[command(name = "hyperfetch", version = "0.1.0", author = "Revanth", about = "An extremely fast system fetch tool written in Rust")]
 pub struct Cli {
+    /// Optional subcommand to execute specific tasks instead of a standard fetch
     #[command(subcommand)]
     pub command: Option<Commands>,
 
-    /// Enable live interactive dashboard mode
+    /// Future feature: Real-time dashboard mode (currently in development)
     #[arg(short, long, global = true)]
     pub live: bool,
 
-    /// Specify a configuration file path or a profile name
+    /// Override the default configuration with a custom file path or named profile
     #[arg(short, long, global = true)]
     pub config: Option<String>,
 
-    /// Override the visual logo with another OS's ASCII or a file path
+    /// Display a different OS's ASCII logo or provide a path to a custom logo file
     #[arg(long, global = true)]
     pub logo: Option<String>,
 
-    /// Override the modules to run, comma-separated (e.g., os,cpu,memory)
+    /// Specify exactly which modules to execute, overriding the configuration file
     #[arg(long, global = true)]
     pub modules: Option<String>,
 
-    /// Apply a custom visual layout theme (e.g., minimal, neon)
+    /// Theme override for colors and formatting
     #[arg(long, global = true)]
     pub theme: Option<String>,
 
-    /// Output raw JSON instead of the ASCII UI (perfect for piping to jq)
+    /// Output system information in machine-readable JSON format
     #[arg(short, long, global = true)]
     pub json: bool,
 
-    /// Output a clean tabular text format instead of the ASCII UI
+    /// Output system information in a clean, non-ASCII table format
     #[arg(long, global = true)]
     pub table: bool,
 
-    /// Show detailed performance profiling metrics at the end of execution
+    /// Display timing metrics and module execution statistics
     #[arg(long, global = true)]
     pub benchmark: bool,
 }

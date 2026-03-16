@@ -1,6 +1,7 @@
 use crate::core::module::Module;
 use sysinfo::Disks;
 
+/// Module for detecting physical disks and reporting their usage.
 pub struct DiskModule;
 
 impl Module for DiskModule {
@@ -9,24 +10,26 @@ impl Module for DiskModule {
     }
 
     fn fetch(&self) -> Vec<(String, String)> {
+        // Refresh the list of mounted disks
         let disks = Disks::new_with_refreshed_list();
-        // Collect multiple valid local disks avoiding virtual/overlay mounts.
         let mut disk_stats = Vec::new();
 
         for disk in disks.list() {
             let fs = disk.file_system().to_string_lossy();
+            
+            // Filter out virtual, overlay, and temporary filesystems to only show physical storage
             let is_physical = !fs.eq_ignore_ascii_case("tmpfs") 
                            && !fs.eq_ignore_ascii_case("overlay") 
                            && !fs.eq_ignore_ascii_case("squashfs")
                            && !fs.eq_ignore_ascii_case("devtmpfs")
-                           && fs.len() > 0;
+                           && !fs.is_empty();
             
-            // For btrfs, avoid multiple subvolumes reporting the same disk capacities.
             if is_physical {
                 let total_space = disk.total_space();
                 let available_space = disk.available_space();
                 
                 if total_space > 0 {
+                    // Prevent duplicate reporting for filesystems mounted multiple times (common in Btrfs)
                     let has_duplicate_sz = disk_stats.iter().any(|d: &(u64, u64, std::path::PathBuf)| d.0 == total_space);
                     
                     if !has_duplicate_sz {
@@ -36,6 +39,7 @@ impl Module for DiskModule {
             }
         }
 
+        // Format the results for display
         if !disk_stats.is_empty() {
              let mut results = Vec::new();
              for (total_space, available_space, mount) in disk_stats {

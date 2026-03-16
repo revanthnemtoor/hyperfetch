@@ -3,6 +3,9 @@ use std::env;
 use std::fs;
 use std::net::UdpSocket;
 
+// This file contains many smaller, specialized modules to avoid file-system bloat.
+
+/// Module for detecting the system hostname.
 pub struct HostnameModule;
 impl Module for HostnameModule {
     fn name(&self) -> &'static str { "Hostname" }
@@ -14,6 +17,7 @@ impl Module for HostnameModule {
     }
 }
 
+/// Module for identifying the hardware model/host (e.g., "ThinkPad X1 Carbon").
 pub struct HardwareModelModule;
 impl Module for HardwareModelModule {
     fn name(&self) -> &'static str { "Host" }
@@ -34,6 +38,7 @@ impl Module for HardwareModelModule {
     }
 }
 
+/// Module for identifying the Desktop Environment and Window Manager.
 pub struct WmDeModule;
 impl Module for WmDeModule {
     fn name(&self) -> &'static str { "DE/WM" }
@@ -41,22 +46,19 @@ impl Module for WmDeModule {
         let de = env::var("XDG_CURRENT_DESKTOP")
             .or_else(|_| env::var("DESKTOP_SESSION"))
             .unwrap_or_default();
-        let _session_type = env::var("XDG_SESSION_TYPE").unwrap_or_default();
         
-        // This is a rough estimation for speed. 
-        // Parsing proper running WMs involves xprop or Wayland protocols.
-        // We will print the DE or Wayland compositor directly from env for 0.1ms speed.
         let mut results = vec![];
         if !de.is_empty() {
              results.push(("DE".to_string(), de.clone()));
         }
         
+        // Detection for Wayland compositors vs X11 window managers
         let wm = env::var("WAYLAND_DISPLAY").unwrap_or_else(|_| env::var("XDG_SESSION_DESKTOP").unwrap_or_default());
         if !wm.is_empty() {
              let mut wm_name = wm.clone();
              if wm.starts_with("wayland") {
                  wm_name = format!("{} (Wayland)", de.split(':').next().unwrap_or("Compositor"));
-             }
+              }
              results.push(("WM".to_string(), wm_name));
         }
 
@@ -64,6 +66,7 @@ impl Module for WmDeModule {
     }
 }
 
+/// Module for detecting GTK themes, icons, and cursor settings.
 pub struct ThemeModule;
 impl Module for ThemeModule {
     fn name(&self) -> &'static str { "Theme" }
@@ -72,6 +75,7 @@ impl Module for ThemeModule {
         if let Some(mut path) = dirs::config_dir() {
             path.push("gtk-3.0");
             path.push("settings.ini");
+            // Parse the GTK settings file for theme data
             if let Ok(config) = fs::read_to_string(path) {
                 for line in config.lines() {
                     if line.starts_with("gtk-theme-name") {
@@ -90,6 +94,7 @@ impl Module for ThemeModule {
     }
 }
 
+/// Module for reporting Swap memory usage from /proc/meminfo.
 pub struct SwapModule;
 impl Module for SwapModule {
     fn name(&self) -> &'static str { "Swap" }
@@ -114,11 +119,13 @@ impl Module for SwapModule {
     }
 }
 
+/// Module for detecting the local IPv4 address using a fast UDP connection trick.
 pub struct LocalIpModule;
 impl Module for LocalIpModule {
     fn name(&self) -> &'static str { "Local IP" }
     fn fetch(&self) -> Vec<(String, String)> {
-        // Fast UDP trick to get active local IP without sweeping all interfaces
+        // Fast UDP trick: we "connect" to a public IP to see which local interface the OS picks.
+        // No packets are actually sent over the wire.
         if let Ok(socket) = UdpSocket::bind("0.0.0.0:0") {
             if socket.connect("8.8.8.8:80").is_ok() {
                 if let Ok(addr) = socket.local_addr() {
@@ -130,6 +137,7 @@ impl Module for LocalIpModule {
     }
 }
 
+/// Module for reporting the current system locale (language).
 pub struct LocaleModule;
 impl Module for LocaleModule {
     fn name(&self) -> &'static str { "Locale" }
@@ -143,6 +151,7 @@ impl Module for LocaleModule {
     }
 }
 
+/// Module for identifying connected monitors and their resolutions.
 pub struct MonitorModule;
 impl Module for MonitorModule {
     fn name(&self) -> &'static str { "Monitor" }
@@ -170,6 +179,7 @@ impl Module for MonitorModule {
     }
 }
 
+/// Module for detecting the active GPU driver being used by the kernel.
 pub struct GpuDriverModule;
 impl Module for GpuDriverModule {
     fn name(&self) -> &'static str { "GPU Driver" }
@@ -180,6 +190,7 @@ impl Module for GpuDriverModule {
                 let path = entry.path();
                 let name = path.file_name().unwrap_or_default().to_string_lossy();
                 if name.starts_with("card") && !name.contains('-') {
+                    // Inspect the device uevent file for the active driver name
                     if let Ok(uevent) = fs::read_to_string(path.join("device/uevent")) {
                         for line in uevent.lines() {
                             if line.starts_with("DRIVER=") {
@@ -195,15 +206,12 @@ impl Module for GpuDriverModule {
     }
 }
 
+/// Module for detecting the font configured in the terminal emulator.
 pub struct TerminalFontModule;
 impl Module for TerminalFontModule {
     fn name(&self) -> &'static str { "Terminal Font" }
     fn fetch(&self) -> Vec<(String, String)> {
-        if let Some(font) = env::var("FONTS_CONFIG").ok() {
-            return vec![("Terminal Font".to_string(), font)];
-        }
-        
-        // Fast hardcoded detection for common terminal emulators
+        // Fast hardcoded detection for common terminal emulators like Alacritty
         let term = env::var("TERM").unwrap_or_default();
         if term.contains("alacritty") {
             if let Some(mut path) = dirs::config_dir() {

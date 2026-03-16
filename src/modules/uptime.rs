@@ -1,6 +1,7 @@
 use std::fs;
 use crate::core::module::Module;
 
+/// Module for calculating system uptime in a human-readable format.
 pub struct UptimeModule;
 
 impl Module for UptimeModule {
@@ -9,10 +10,13 @@ impl Module for UptimeModule {
     }
 
     fn fetch(&self) -> Vec<(String, String)> {
+        // Read uptime seconds from /proc/uptime
         if let Ok(content) = fs::read_to_string("/proc/uptime") {
             if let Some(uptime_str) = content.split_whitespace().next() {
                 if let Ok(uptime_secs) = uptime_str.parse::<f64>() {
                     let secs = uptime_secs as u64;
+                    
+                    // Convert total seconds into days, hours, and minutes
                     let days = secs / 86400;
                     let hours = (secs % 86400) / 3600;
                     let mins = (secs % 3600) / 60;

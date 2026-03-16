@@ -1,6 +1,7 @@
 use crate::core::module::Module;
 use std::fs;
 
+/// Module for counting installed packages across various package managers.
 pub struct PackagesModule;
 
 impl Module for PackagesModule {
@@ -11,7 +12,7 @@ impl Module for PackagesModule {
     fn fetch(&self) -> Vec<(String, String)> {
         let mut pkg_counts = Vec::new();
 
-        // Arch / Pacman
+        // Arch Linux: Count directories in the local pacman database
         if let Ok(entries) = fs::read_dir("/var/lib/pacman/local") {
             let count = entries.count();
             if count > 0 {
@@ -19,7 +20,7 @@ impl Module for PackagesModule {
             }
         }
 
-        // Debian / APT (rough fast estimate via counting dirs/files or standard dpkg status)
+        // Debian/Ubuntu: Count "Package:" lines in the dpkg status file
         if let Ok(content) = fs::read_to_string("/var/lib/dpkg/status") {
             let count = content.lines().filter(|l| l.starts_with("Package:")).count();
             if count > 0 {
@@ -27,7 +28,7 @@ impl Module for PackagesModule {
             }
         }
 
-        // Flatpak
+        // Flatpak: Count installed application directories
         if let Ok(entries) = fs::read_dir("/var/lib/flatpak/app") {
             let count = entries.count();
             if count > 0 {
@@ -35,6 +36,7 @@ impl Module for PackagesModule {
             }
         }
 
+        // Return the aggregated counts or "Unknown"
         if pkg_counts.is_empty() {
             vec![("Packages".to_string(), "Unknown".to_string())]
         } else {

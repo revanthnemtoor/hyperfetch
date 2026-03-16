@@ -1,6 +1,8 @@
 use colored::*;
 use crate::config::ThemeConfig;
 
+/// Helper to wrap text in ANSI color codes based on a string name.
+/// This matches the theme colors defined in the configuration.
 fn colorize(text: &str, color: &str) -> colored::ColoredString {
     match color {
         "cyan" => text.cyan().bold(),
@@ -15,6 +17,7 @@ fn colorize(text: &str, color: &str) -> colored::ColoredString {
     }
 }
 
+/// Renders the classic side-by-side layout: ASCII logo on the left, system data on the right.
 pub fn print_layout(logo: &crate::ui::ascii::AsciiLogo, sys_info: &Vec<(String, String)>, theme: &ThemeConfig) {
     let logo_lines = &logo.lines;
     
@@ -46,6 +49,8 @@ pub fn print_layout(logo: &crate::ui::ascii::AsciiLogo, sys_info: &Vec<(String, 
     println!();
 }
 
+/// Renders system information in a clean, vertical tabular format without ASCII art.
+/// Auto-aligns values based on the longest property key.
 pub fn print_table(sys_info: &Vec<(String, String)>) {
     let max_key_len = sys_info.iter().map(|(k, _)| k.chars().count()).max().unwrap_or(10);
     

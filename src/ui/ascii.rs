@@ -1,3 +1,5 @@
+/// Registry of ASCII logos for various operating systems.
+/// Supports auto-detection and custom logo loading from local files.
 pub struct AsciiLogo {
     pub lines: Vec<String>,
     pub color: String,

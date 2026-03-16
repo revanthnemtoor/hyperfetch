@@ -1,9 +1,12 @@
 use crate::core::module::Module;
 use std::fs;
 
+/// Module for detecting installed Graphics Processing Units (GPUs).
 pub struct GpuModule;
 
+/// Resolves a PCI vendor and device ID into a human-readable name by searching local PCI databases.
 fn get_pci_device_name(vendor_id: &str, device_id: &str) -> Option<String> {
+    // Search common Linux PCI ID database locations
     let paths = ["/usr/share/hwdata/pci.ids", "/usr/share/misc/pci.ids", "/var/lib/pci.ids"];
     let mut content = String::new();
     for path in paths {
@@ -14,7 +17,7 @@ fn get_pci_device_name(vendor_id: &str, device_id: &str) -> Option<String> {
     }
     if content.is_empty() { return None; }
     
-    // Convert to lowercase to match pci.ids format (e.g. "10de" instead of "10DE")
+    // Exact mapping logic for the pci.ids file format
     let v_lower = vendor_id.to_lowercase();
     let d_lower = device_id.to_lowercase();
 
@@ -31,7 +34,7 @@ fn get_pci_device_name(vendor_id: &str, device_id: &str) -> Option<String> {
             if line.starts_with('\t') {
                 if line.starts_with(&device_prefix) {
                     let mut name = line[device_prefix.len()..].trim().to_string();
-                    // Extract name from brackets if present e.g. "GA107M [GeForce RTX 3050 Ti Mobile]" -> "GeForce RTX 3050 Ti Mobile"
+                    // Clean up names like "GA107M [GeForce RTX 3050 Ti Mobile]" -> "GeForce RTX 3050 Ti Mobile"
                     if let Some(start) = name.find('[') {
                         if let Some(end) = name.find(']') {
                             name = name[start + 1..end].to_string();
@@ -55,6 +58,7 @@ impl Module for GpuModule {
     fn fetch(&self) -> Vec<(String, String)> {
         let mut gpus = Vec::new();
         
+        // Iterate through Direct Rendering Manager (DRM) nodes to find video cards
         if let Ok(entries) = fs::read_dir("/sys/class/drm") {
             for entry in entries.flatten() {
                 let name = entry.file_name().to_string_lossy().to_string();
@@ -70,7 +74,7 @@ impl Module for GpuModule {
                         if let Some(resolved_name) = get_pci_device_name(v, d) {
                             gpu_name = resolved_name;
                         } else {
-                            // Fallback
+                            // Hardcoded fallback for most common vendors
                             let vendor = match v {
                                 "1002" => "AMD",
                                 "10de" => "NVIDIA",
@@ -90,6 +94,7 @@ impl Module for GpuModule {
             }
         }
 
+        // Return all detected GPUs, numbering them if multiple exist
         if !gpus.is_empty() {
             let mut results = Vec::new();
             for (i, gpu) in gpus.into_iter().enumerate() {

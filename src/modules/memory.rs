@@ -1,6 +1,7 @@
 use crate::core::module::Module;
 use crate::core::sys_paths::MEMINFO;
 
+/// Module for reporting total and used system memory (RAM).
 pub struct MemoryModule;
 
 impl Module for MemoryModule {
@@ -9,6 +10,7 @@ impl Module for MemoryModule {
     }
 
     fn fetch(&self) -> Vec<(String, String)> {
+        // Use globally cached /proc/meminfo
         if !MEMINFO.is_empty() {
             let mut mem_total = 0;
             let mut mem_available = 0;
@@ -34,12 +36,13 @@ impl Module for MemoryModule {
             }
 
             if found_total && found_avail {
+                // Calculate used memory (Total - Available)
                 let used = mem_total.saturating_sub(mem_available);
                 return vec![("Memory".to_string(), format!("{:.2} GiB / {:.2} GiB", used as f64 / 1048576.0, mem_total as f64 / 1048576.0))];
             }
         }
         
-        // Fallback
+        // Fallback using sysinfo crate
         use sysinfo::System;
         let mut sys = System::new();
         sys.refresh_memory();
@@ -49,6 +52,7 @@ impl Module for MemoryModule {
     }
 }
 
+/// Helper to parse numeric values from /proc/meminfo lines (format: "Key: Value kB")
 fn parse_kb(line: &str) -> Option<u64> {
     line.split_whitespace()
         .nth(1)

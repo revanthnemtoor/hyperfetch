@@ -1,6 +1,7 @@
 use crate::core::module::Module;
 use std::fs;
 
+/// Module for detecting Video RAM (VRAM) usage across various GPU drivers.
 pub struct VramModule;
 
 impl Module for VramModule {
@@ -11,6 +12,7 @@ impl Module for VramModule {
     fn fetch(&self) -> Vec<(String, String)> {
         let mut results = Vec::new();
 
+        // Attempt to read VRAM info from sysfs (supported by open-source drivers like amdgpu, nouveau)
         if let Ok(entries) = fs::read_dir("/sys/class/drm") {
             for entry in entries.flatten() {
                 let name = entry.file_name().to_string_lossy().to_string();
@@ -31,9 +33,10 @@ impl Module for VramModule {
             }
         }
 
+        // NVIDIA Proprietary Driver Fallback
+        // Since NVIDIA doesn't expose VRAM in sysfs, we use nvidia-smi.
         if results.is_empty() {
-            // NVIDIA proprietary drivers hide VRAM from sysfs, fallback to nvidia-smi
-            // But first, check if the NVIDIA GPU is asleep to avoid a 1.5s wake-up lag.
+            // First, check if the GPU is suspended to avoid the 1-2 second wake-up lag.
             let mut is_suspended = false;
             if let Ok(entries) = fs::read_dir("/sys/bus/pci/devices") {
                 for entry in entries.flatten() {
@@ -76,6 +79,7 @@ impl Module for VramModule {
             }
         }
 
+        // Return discovered VRAM info or an unsupported notice
         if results.is_empty() {
             vec![("GPU VRAM".to_string(), "Unknown / Unsupported".to_string())]
         } else {

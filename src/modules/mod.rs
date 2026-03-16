@@ -1,20 +1,21 @@
+/// Individual information modules that perform specific system lookups.
 pub mod os;
 pub mod kernel;
 pub mod uptime;
 pub mod cpu;
+pub mod cpu_freq;
 pub mod memory;
 pub mod gpu;
+pub mod vram;
 pub mod disk;
 pub mod network;
+pub mod wifi;
 pub mod shell;
 pub mod terminal;
+pub mod environment;
+pub mod packages;
 pub mod sensors;
 pub mod display;
-pub mod packages;
-pub mod environment;
 pub mod battery;
-pub mod cpu_freq;
-pub mod vram;
-pub mod wifi;
-pub mod extended;
 pub mod custom;
+pub mod extended;

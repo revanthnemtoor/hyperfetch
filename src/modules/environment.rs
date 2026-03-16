@@ -1,6 +1,7 @@
 use crate::core::module::Module;
 use std::fs;
 
+/// Module for detecting the execution environment (Virtual Machines or Containers).
 pub struct EnvironmentModule;
 
 impl Module for EnvironmentModule {
@@ -11,7 +12,7 @@ impl Module for EnvironmentModule {
     fn fetch(&self) -> Vec<(String, String)> {
         let mut results = Vec::new();
 
-        // Check for containers
+        // Container Detection: Check cgroups and specific environment files
         let root_cgroup = fs::read_to_string("/proc/1/cgroup").unwrap_or_default();
         let mut container = None;
         if root_cgroup.contains("docker") || fs::metadata("/.dockerenv").is_ok() {
@@ -26,7 +27,7 @@ impl Module for EnvironmentModule {
             results.push(("Container".to_string(), c.to_string()));
         }
 
-        // Check for VMs via DMI sysfs
+        // VM Detection: Analyze DMI system vendor information
         if let Ok(sys_vendor) = fs::read_to_string("/sys/class/dmi/id/sys_vendor") {
             let vendor = sys_vendor.trim().to_lowercase();
             if vendor.contains("qemu") || vendor.contains("kvm") {
@@ -40,8 +41,7 @@ impl Module for EnvironmentModule {
             }
         }
 
-        // Technically Wayland vs X11 is in DE module but we can surface it here if preferred. Let's keep it in Desktop for now and just emit Container/VM here.
-
+        // Default to "Bare Metal" if no virtualization is detected
         if results.is_empty() {
              vec![("Environment".to_string(), "Bare Metal".to_string())]
         } else {

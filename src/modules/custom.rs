@@ -1,16 +1,21 @@
 use crate::core::module::Module;
 use std::process::Command;
-
-pub struct CustomShellModule {
-    pub module_name: String,
-    pub command: String,
-    pub timeout_ms: Option<u64>,
-    pub cache_minutes: Option<u64>,
-}
-
 use std::time::{Duration, SystemTime};
 use std::fs;
 use wait_timeout::ChildExt;
+
+/// A dynamic module that executes user-defined shell commands and parses their output.
+/// Supports configurable timeouts and persistent caching to prevent UI stalling.
+pub struct CustomShellModule {
+    /// Display name of the module
+    pub module_name: String,
+    /// The shell command to execute
+    pub command: String,
+    /// Maximum time to wait for the command to finish
+    pub timeout_ms: Option<u64>,
+    /// How long to persist the command output in the cache
+    pub cache_minutes: Option<u64>,
+}
 
 impl Module for CustomShellModule {
     fn name(&self) -> &str {
@@ -20,7 +25,7 @@ impl Module for CustomShellModule {
     fn fetch(&self) -> Vec<(String, String)> {
         let cache_path = self.get_cache_path();
 
-        // Check Cache
+        // Check if a valid, non-expired cache entry exists
         if let Some(minutes) = self.cache_minutes {
             if let Ok(metadata) = fs::metadata(&cache_path) {
                 if let Ok(modified) = metadata.modified() {
@@ -34,7 +39,7 @@ impl Module for CustomShellModule {
             }
         }
 
-        // Execute Command
+        // Execute the command via 'sh -c'
         let mut child = match Command::new("sh")
             .arg("-c")
             .arg(&self.command)
@@ -45,6 +50,7 @@ impl Module for CustomShellModule {
                 Err(_) => return vec![],
             };
 
+        // Enforce the execution timeout to keep the fetch blazingly fast
         let timeout = Duration::from_millis(self.timeout_ms.unwrap_or(2000));
         let exit_status = child.wait_timeout(timeout).ok().flatten();
 
@@ -58,19 +64,19 @@ impl Module for CustomShellModule {
                 output.trim().to_string()
             }
             Some(_) => {
-                // Command failed or timed out
+                // Command failed or timed out; kill the child process
                 let _ = child.kill();
                 "".to_string()
             }
             None => {
-                // Timed out
+                // Severe timeout; kill the child process
                 let _ = child.kill();
                 "".to_string()
             }
         };
 
         if !result.is_empty() {
-            // Save to Cache
+            // Persist the result to the cache for future executions
             if let Some(_) = self.cache_minutes {
                 let _ = fs::create_dir_all(cache_path.parent().unwrap());
                 let _ = fs::write(&cache_path, &result);
@@ -83,10 +89,12 @@ impl Module for CustomShellModule {
 }
 
 impl CustomShellModule {
+    /// Resolves the filesystem path for this module's cache file (~/.cache/hyperfetch/custom/...).
     fn get_cache_path(&self) -> std::path::PathBuf {
         let mut path = dirs::cache_dir().unwrap_or_else(|| std::env::temp_dir());
         path.push("hyperfetch");
         path.push("custom");
+        // Create a safe filename slug from the module name
         let slug = self.module_name.to_lowercase()
             .replace(' ', "_")
             .replace(|c: char| !c.is_alphanumeric() && c != '_', "");
