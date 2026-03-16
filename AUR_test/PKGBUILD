@@ -10,8 +10,7 @@ depends=('gcc-libs')
 makedepends=('cargo')
 provides=('fetch')
 conflicts=('hyperfetch-git')
-# Note: Pointing to a specific commit since v0.1.0 tag doesn't exist yet.
-# You should update this to a tag once you create one (e.g. v0.1.0).
+
 _commit=032a11b4a225954fe1fad9631fb0c093b120cff4
 source=("$pkgname-$_commit.tar.gz::$url/archive/$_commit.tar.gz")
 sha256sums=('SKIP') # Use 'updpkgsums' to update this or set to actual hash
