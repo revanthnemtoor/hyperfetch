@@ -11,7 +11,7 @@ use std::time::Instant;
 
 use crate::core::module::Module;
 use crate::core::cache::HardwareCache;
-use crate::modules::{os::OsModule, kernel::KernelModule, uptime::UptimeModule, cpu::CpuModule, memory::MemoryModule, gpu::GpuModule, disk::DiskModule, network::NetworkModule, shell::ShellModule, terminal::TerminalModule, desktop::DesktopModule, sensors::SensorsModule, display::DisplayModule, packages::PackagesModule, environment::EnvironmentModule, battery::BatteryModule, cpu_freq::CpuFreqModule, vram::VramModule, wifi::WifiModule};
+use crate::modules::{os::OsModule, kernel::KernelModule, uptime::UptimeModule, cpu::CpuModule, memory::MemoryModule, gpu::GpuModule, disk::DiskModule, network::NetworkModule, shell::ShellModule, terminal::TerminalModule, sensors::SensorsModule, display::DisplayModule, packages::PackagesModule, environment::EnvironmentModule, battery::BatteryModule, cpu_freq::CpuFreqModule, vram::VramModule, wifi::WifiModule};
 
 use crate::modules::extended::{HostnameModule, WmDeModule, ThemeModule, SwapModule, LocalIpModule, LocaleModule, HardwareModelModule, MonitorModule, GpuDriverModule, TerminalFontModule};
 use crate::modules::custom::CustomShellModule;
@@ -59,6 +59,8 @@ fn main() {
         available_modules.push(Box::new(CustomShellModule {
             module_name: script.name.clone(),
             command: script.command.clone(),
+            timeout_ms: script.timeout_ms,
+            cache_minutes: script.cache_minutes,
         }));
     }
 
@@ -73,10 +75,27 @@ fn main() {
         }
         crate::cli::Commands::Doctor => {
             println!("{}", "--- System Doctor ---".bold().blue());
-            println!("Config Path:     {}", dirs::config_dir().map(|mut p| { p.push("fetch"); p.to_string_lossy().to_string() }).unwrap_or_else(|| "Unknown".to_string()));
+            println!("Config Path:     {}", dirs::config_dir().map(|mut p| { p.push("hyperfetch"); p.to_string_lossy().to_string() }).unwrap_or_else(|| "Unknown".to_string()));
             println!("Custom Scripts:  {}", conf.custom.len());
             println!("Rayon Threads:   {}", rayon::current_num_threads());
             println!("Micro-caches:    Active");
+            return;
+        }
+        crate::cli::Commands::Completions { shell } => {
+            use clap::CommandFactory;
+            use clap_complete::generate;
+            let mut cmd = crate::cli::Cli::command();
+            generate(shell, &mut cmd, "hyperfetch", &mut std::io::stdout());
+            return;
+        }
+        crate::cli::Commands::Init => {
+            let path = dirs::config_dir().map(|mut p| { p.push("hyperfetch"); p.push("config.toml"); p }).unwrap();
+            if path.exists() {
+                println!("{}", "Configuration already exists.".yellow());
+            } else {
+                let _ = config::Config::load(None);
+                println!("{} {}", "Initialized default configuration at".green(), path.display());
+            }
             return;
         }
         crate::cli::Commands::Run => {}
@@ -86,8 +105,9 @@ fn main() {
     let mut cache_modified = false;
 
     use rayon::prelude::*;
+    use std::collections::HashSet;
 
-    // Aliasing logic
+    // Aliasing & Normalization logic
     let mut run_modules: Vec<String> = vec![];
     let to_parse = if let Some(cli_mods) = &args.modules {
         cli_mods.split(',').map(|s| s.trim().to_string()).collect()
@@ -96,14 +116,20 @@ fn main() {
     };
 
     for m in to_parse {
-        if m == "system" {
+        let normalized = if conf.custom.iter().any(|c| c.name.to_lowercase() == m.to_lowercase()) {
+            m // Don't normalize custom modules
+        } else {
+            m.replace('-', " ").replace('_', " ")
+        };
+
+        if normalized == "system" {
             run_modules.extend(vec!["os".to_string(), "kernel".to_string(), "uptime".to_string(), "cpu".to_string(), "memory".to_string(), "disk".to_string()]);
-        } else if m == "hardware" {
+        } else if normalized == "hardware" {
             run_modules.extend(vec!["cpu".to_string(), "gpu".to_string(), "memory".to_string(), "disk".to_string()]);
-        } else if m == "network" {
+        } else if normalized == "network" {
             run_modules.extend(vec!["network".to_string(), "wifi".to_string(), "local ip".to_string()]);
         } else {
-            run_modules.push(m);
+            run_modules.push(normalized);
         }
     }
 
@@ -126,6 +152,7 @@ fn main() {
     }).collect();
 
     let mut sys_info = Vec::with_capacity(32);
+    let mut seen_keys = HashSet::new();
     let mut os_name = "Linux".to_string(); // default for ascii
 
     for (name_lower, entries) in results {
@@ -136,6 +163,11 @@ fn main() {
         }
 
         for (key, val) in entries {
+            if seen_keys.contains(&key) {
+                continue;
+            }
+            seen_keys.insert(key.clone());
+
             if key == "OS" {
                 os_name = val.clone();
             }
@@ -155,7 +187,7 @@ fn main() {
         let mut disks = serde_json::Map::new();
         
         for (k, v) in &sys_info {
-            let mut key = k.to_lowercase().replace(' ', "_").replace(|c: char| !c.is_alphanumeric() && c != '_', "");
+            let key = k.to_lowercase().replace(' ', "_").replace(|c: char| !c.is_alphanumeric() && c != '_', "");
             
             if k.starts_with("GPU") && !k.contains("Driver") && !k.contains("VRAM") {
                 gpu_names.push(v.clone());

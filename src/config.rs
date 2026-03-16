@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 pub struct CustomModuleConfig {
     pub name: String,
     pub command: String,
+    pub timeout_ms: Option<u64>,
+    pub cache_minutes: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -25,7 +27,9 @@ impl Default for ThemeConfig {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
+    #[serde(default = "default_logo")]
     pub logo: String,
+    #[serde(default = "default_modules")]
     pub modules: Vec<String>,
     #[serde(default)]
     pub custom: Vec<CustomModuleConfig>,
@@ -33,42 +37,47 @@ pub struct Config {
     pub theme: ThemeConfig,
 }
 
+fn default_logo() -> String { "default".to_string() }
+fn default_modules() -> Vec<String> {
+    vec![
+        "os".to_string(),
+        "hostname".to_string(),
+        "host".to_string(),
+        "kernel".to_string(),
+        "uptime".to_string(),
+        "packages".to_string(),
+        "shell".to_string(),
+        "display".to_string(),
+        "monitor".to_string(),
+        "de/wm".to_string(),
+        "theme".to_string(),
+        "terminal".to_string(),
+        "terminal font".to_string(),
+        "cpu".to_string(),
+        "cpu freq".to_string(),
+        "gpu".to_string(),
+        "gpu driver".to_string(),
+        "gpu vram".to_string(),
+        "memory".to_string(),
+        "swap".to_string(),
+        "disk".to_string(),
+        "network".to_string(),
+        "local ip".to_string(),
+        "wifi".to_string(),
+        "locale".to_string(),
+        "sensors".to_string(),
+        "battery".to_string(),
+        "environment".to_string(),
+    ]
+}
+
 impl Default for Config {
     fn default() -> Self {
         Self {
-            logo: "default".to_string(),
+            logo: default_logo(),
             custom: vec![],
             theme: ThemeConfig::default(),
-            modules: vec![
-                "os".to_string(),
-                "hostname".to_string(),
-                "host".to_string(),
-                "kernel".to_string(),
-                "uptime".to_string(),
-                "packages".to_string(),
-                "shell".to_string(),
-                "display".to_string(),
-                "monitor".to_string(),
-                "de/wm".to_string(),
-                "theme".to_string(),
-                "terminal".to_string(),
-                "terminal font".to_string(),
-                "cpu".to_string(),
-                "cpu freq".to_string(),
-                "gpu".to_string(),
-                "gpu driver".to_string(),
-                "gpu vram".to_string(),
-                "memory".to_string(),
-                "swap".to_string(),
-                "disk".to_string(),
-                "network".to_string(),
-                "local ip".to_string(),
-                "wifi".to_string(),
-                "locale".to_string(),
-                "sensors".to_string(),
-                "battery".to_string(),
-                "environment".to_string(),
-            ],
+            modules: default_modules(),
         }
     }
 }
@@ -76,7 +85,7 @@ impl Default for Config {
 impl Config {
     pub fn load(cli_path: Option<&str>) -> Self {
         let mut path = dirs::config_dir().unwrap_or_default();
-        path.push("fetch");
+        path.push("hyperfetch");
 
         // Determine if cli_path is an exact path or a named profile
         if let Some(custom_path) = cli_path {

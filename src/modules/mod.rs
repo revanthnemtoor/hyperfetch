@@ -8,7 +8,6 @@ pub mod disk;
 pub mod network;
 pub mod shell;
 pub mod terminal;
-pub mod desktop;
 pub mod sensors;
 pub mod display;
 pub mod packages;

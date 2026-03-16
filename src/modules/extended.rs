@@ -41,7 +41,7 @@ impl Module for WmDeModule {
         let de = env::var("XDG_CURRENT_DESKTOP")
             .or_else(|_| env::var("DESKTOP_SESSION"))
             .unwrap_or_default();
-        let session_type = env::var("XDG_SESSION_TYPE").unwrap_or_default();
+        let _session_type = env::var("XDG_SESSION_TYPE").unwrap_or_default();
         
         // This is a rough estimation for speed. 
         // Parsing proper running WMs involves xprop or Wayland protocols.

@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand};
 
 /// A blazingly fast system fetch tool in Rust.
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
+#[command(name = "hyperfetch", version = "0.1.0", author = "Revanth", about = "An extremely fast system fetch tool written in Rust")]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Option<Commands>,
@@ -48,4 +48,11 @@ pub enum Commands {
     ListModules,
     /// Verify system sensors and cache capabilities
     Doctor,
+    /// Generate shell completion scripts
+    Completions {
+        /// The shell to generate completions for
+        shell: clap_complete::Shell,
+    },
+    /// Initialize the default configuration file
+    Init,
 }
