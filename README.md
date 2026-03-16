@@ -3,12 +3,12 @@
 # hyperfetch `v0.1.0`
 **The industry's fastest system information tool, written in Rust.**
 
-![Live Demo](assets/live_demo.gif)
-
-![AUR Version](https://img.shields.io/aur/version/hyperfetch)
-![GitHub stars](https://img.shields.io/github/stars/revanthnemtoor/hyperfetch)
+[![AUR Version](https://img.shields.io/aur/version/hyperfetch)](https://aur.archlinux.org/packages/hyperfetch)
+[![GitHub stars](https://img.shields.io/github/stars/revanthnemtoor/hyperfetch)](https://github.com/revanthnemtoor/hyperfetch/stargazers)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Rust](https://img.shields.io/badge/rust-1.75+-orange)
+
+![Live Demo](assets/live_demo.gif)
 
 </div>
 
@@ -46,6 +46,10 @@ Install using an AUR helper:
 yay -S hyperfetch
 ```
 
+### Prebuilt Binary (Linux)
+Download from the latest release:
+[https://github.com/revanthnemtoor/hyperfetch/releases](https://github.com/revanthnemtoor/hyperfetch/releases)
+
 ### Build from Source
 ```bash
 git clone https://github.com/revanthnemtoor/hyperfetch.git
@@ -74,11 +78,27 @@ hyperfetch --live
 
 ## ⚡ Performance
 
+Benchmark performed using:
+
+```bash
+hyperfine -N --warmup 100 "hyperfetch" "fastfetch" "neofetch"
+```
+
 | Tool           | Mean Time  |
 | -------------- | ---------- |
 | **hyperfetch** | **1.8 ms** |
 | fastfetch      | 8.3 ms     |
 | neofetch       | 569 ms     |
+
+### Relative Performance
+**hyperfetch** is approximately:
+- **4.6× faster than fastfetch**
+- **315× faster than neofetch**
+
+### Tested on:
+- **CPU**: Intel Core i5-12500H  
+- **OS**: CachyOS (Arch Linux)  
+- **Terminal**: Alacritty / Fish
 
 ---
 
