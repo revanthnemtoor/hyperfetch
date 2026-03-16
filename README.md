@@ -1,45 +1,89 @@
+![AUR Version](https://img.shields.io/aur/version/hyperfetch)
+![AUR Votes](https://img.shields.io/aur/votes/hyperfetch)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Rust](https://img.shields.io/badge/rust-1.75+-orange)
+
 # hyperfetch
+**hyperfetch** is an extremely fast and customizable system information tool written in Rust.
 
-`hyperfetch` is an extremely fast and customizable system information tool written in Rust. It aims to provide system details in the style of `fastfetch` or `neofetch` but with a focus on extreme performance and a premium aesthetic.
+It displays system information similar to tools like fastfetch or neofetch, but with a focus on **extreme performance, modern design, and clean output**.
 
-## Features
+---
 
-- **Extreme Performance**: Target execution time in the 1-3ms range.
-- **Hardware Caching**: Efficient caching of static hardware information to avoid expensive system calls.
-- **Customizable**: Configurable via `config.toml`.
-- **Modern Aesthetics**: Built with a focus on visual excellence and premium design.
-- **AUR Support**: Available on the Arch User Repository.
+## ✨ Features
 
-## Installation
+* ⚡ **Extreme Performance** – Target execution time in the **1–3 ms range**
+* 🧠 **Hardware Caching** – Avoids repeated expensive system calls
+* 🎨 **Modern Aesthetic** – Clean and visually appealing output
+* ⚙️ **Configurable** – Customize via `config.toml`
+* 📦 **AUR Package Available**
+
+---
+
+## 📦 Installation
 
 ### Arch Linux (AUR)
 
-You can install `hyperfetch` from the AUR using an AUR helper like `yay` or `paru`:
+Install using an AUR helper:
 
 ```bash
 yay -S hyperfetch
 ```
 
-### From Source
+or manually:
 
-Ensure you have Rust and Cargo installed, then:
+```bash
+git clone https://aur.archlinux.org/hyperfetch.git
+cd hyperfetch
+makepkg -si
+```
+
+---
+
+### Build from Source
+
+Ensure Rust and Cargo are installed.
 
 ```bash
 git clone https://github.com/revanthnemtoor/hyperfetch.git
-cd fetch
+cd hyperfetch
 cargo build --release
 ```
 
-The binary will be available at `target/release/hyperfetch`.
+Binary location:
 
-## Usage
+```
+target/release/hyperfetch
+```
 
-Simply run:
+---
+
+## 🚀 Usage
+
+Run:
 
 ```bash
 hyperfetch
 ```
 
-## License
+---
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## ⚡ Performance
+
+Example benchmark:
+
+```
+hyperfetch: ~1.6 ms
+fastfetch: ~5–7 ms
+neofetch: ~80–120 ms
+```
+
+Measured using `hyperfine`.
+
+---
+
+## 📄 License
+
+MIT License
+
+Copyright (c) 2026 Revanth Nemtoor
