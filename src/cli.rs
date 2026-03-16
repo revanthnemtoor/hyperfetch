@@ -56,4 +56,6 @@ pub enum Commands {
     },
     /// Initialize the default configuration file
     Init,
+    /// Generate a man page for hyperfetch
+    Man,
 }

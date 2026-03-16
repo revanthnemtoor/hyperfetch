@@ -1,6 +1,6 @@
 <div align="center">
 
-# hyperfetch
+# hyperfetch `v0.1.0`
 **The industry's fastest system information tool, written in Rust.**
 
 ![Live Demo](assets/live_demo.gif)

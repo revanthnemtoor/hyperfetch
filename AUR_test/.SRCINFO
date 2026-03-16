@@ -1,0 +1,15 @@
+pkgbase = hyperfetch
+	pkgdesc = A high-performance system fetch tool written in Rust
+	pkgver = 0.1.0
+	pkgrel = 1
+	url = https://github.com/revanthnemtoor/hyperfetch
+	arch = x86_64
+	license = MIT
+	makedepends = cargo
+	depends = gcc-libs
+	provides = fetch
+	conflicts = hyperfetch-git
+	source = hyperfetch-032a11b4a225954fe1fad9631fb0c093b120cff4.tar.gz::https://github.com/revanthnemtoor/hyperfetch/archive/032a11b4a225954fe1fad9631fb0c093b120cff4.tar.gz
+	sha256sums = SKIP
+
+pkgname = hyperfetch
