@@ -3,7 +3,7 @@
 # hyperfetch
 **The industry's fastest system information tool, written in Rust.**
 
-![Showcase](assets/showcase.png)
+![Live Demo](assets/live_demo.gif)
 
 ![AUR Version](https://img.shields.io/aur/version/hyperfetch)
 ![GitHub stars](https://img.shields.io/github/stars/revanthnemtoor/hyperfetch)
@@ -24,6 +24,17 @@
 * 🚀 **Deterministic Speed** – Built with optimized Rust for minimal overhead.
 * ⚙️ **Fully Customizable** – Define your own modules, themes, and layouts via `config.toml`.
 * 📦 **AUR Ready** – Native support for Arch Linux users.
+
+---
+
+## 📸 Showcase
+
+<div align="center">
+  <img src="assets/screenshot_1.png" width="400" />
+  <img src="assets/screenshot_3.png" width="400" />
+  <br>
+  <img src="assets/screenshot_4.png" width="800" />
+</div>
 
 ---
 
