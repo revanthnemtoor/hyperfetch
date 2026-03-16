@@ -46,8 +46,6 @@ package() {
   
   # Install man page
   install -Dm644 hyperfetch.1 "$pkgdir/usr/share/man/man1/hyperfetch.1"
-  
-  # Licenses usually go in /usr/share/licenses/$pkgname/
-  # If you add a LICENSE file to your repo, uncomment the lines below:
-  # install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
